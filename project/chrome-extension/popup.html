@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VidText</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          <line x1="12" y1="19" x2="12" y2="23"/>
+          <line x1="8" y1="23" x2="16" y2="23"/>
+        </svg>
+        <h1>VidText</h1>
+      </div>
+      <div id="server-status" class="status-dot offline" title="Server offline"></div>
+    </header>
+
+    <!-- Tabs -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="capture">Capture</button>
+      <button class="tab" data-tab="batch">Batch</button>
+      <button class="tab" data-tab="status">Status</button>
+      <button class="tab" data-tab="history">History</button>
+    </nav>
+
+    <!-- Capture Tab (current page) -->
+    <div class="tab-content active" id="tab-capture">
+      <div class="current-page" id="current-page">
+        <span class="page-platform" id="page-platform">-</span>
+        <span class="page-title" id="page-title">No supported page detected</span>
+      </div>
+
+      <div class="field">
+        <label for="capture-objective">Objective (optional)</label>
+        <input type="text" id="capture-objective" placeholder="e.g., investment timing for gold">
+      </div>
+
+      <label class="toggle-row">
+        <input type="checkbox" id="capture-kindle">
+        <span class="toggle-label">Send to Kindle</span>
+      </label>
+
+      <label class="toggle-row">
+        <input type="checkbox" id="capture-kindle-summary">
+        <span class="toggle-label">Send to Kindle Summarised</span>
+      </label>
+
+      <button class="btn primary" id="btn-capture" disabled>
+        Capture This Page
+      </button>
+
+      <div id="capture-result" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- Batch Tab -->
+    <div class="tab-content" id="tab-batch">
+      <div class="field">
+        <label for="batch-mode">Mode</label>
+        <select id="batch-mode">
+          <option value="urls">Multiple URLs</option>
+          <option value="channel">YouTube Channel</option>
+        </select>
+      </div>
+
+      <div class="field" id="field-urls">
+        <label for="batch-urls">URLs (one per line)</label>
+        <textarea id="batch-urls" rows="4" placeholder="https://youtube.com/watch?v=...&#10;https://instagram.com/reel/..."></textarea>
+      </div>
+
+      <div class="field" id="field-channel" style="display:none;">
+        <label for="batch-channel">Channel URL</label>
+        <input type="text" id="batch-channel" placeholder="https://youtube.com/@channelname">
+        <label for="batch-count" class="mt-8">Number of videos</label>
+        <input type="number" id="batch-count" value="10" min="1" max="50">
+      </div>
+
+      <div class="field">
+        <label for="batch-objective">Objective</label>
+        <input type="text" id="batch-objective" placeholder="e.g., when to invest in gold according to this person">
+      </div>
+
+      <div class="field">
+        <label for="batch-question">Specific Question (optional)</label>
+        <input type="text" id="batch-question" placeholder="e.g., what are the key entry signals?">
+      </div>
+
+      <label class="toggle-row">
+        <input type="checkbox" id="batch-kindle">
+        <span class="toggle-label">Send to Kindle</span>
+      </label>
+
+      <label class="toggle-row">
+        <input type="checkbox" id="batch-kindle-summary">
+        <span class="toggle-label">Send to Kindle Summarised</span>
+      </label>
+
+      <button class="btn primary" id="btn-batch">Process</button>
+
+      <div id="batch-result" class="result-box" style="display:none;"></div>
+    </div>
+
+    <!-- Status Tab -->
+    <div class="tab-content" id="tab-status">
+      <div id="status-list" class="status-list">
+        <p class="muted">Loading jobs...</p>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div class="tab-content" id="tab-history">
+      <div class="field">
+        <input type="text" id="search-input" placeholder="Search transcripts...">
+      </div>
+      <div id="history-list" class="history-list">
+        <p class="muted">Loading...</p>
+      </div>
+    </div>
+
+    <!-- Job Status Bar -->
+    <div id="job-bar" class="job-bar" style="display:none;">
+      <div class="job-spinner"></div>
+      <div class="job-info">
+        <span id="job-text">Processing...</span>
+        <span id="job-eta" class="job-eta"></span>
+      </div>
+      <div id="job-progress-bar" class="job-progress-bar" style="display:none;">
+        <div id="job-progress-fill" class="job-progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
