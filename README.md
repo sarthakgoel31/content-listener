@@ -1,18 +1,14 @@
 # VidText (Content Listener)
 
-**Transcribe, summarize, and extract actionables from any video or podcast -- for free.**
-
----
-
-## Demo
-
-> Screenshots and demo video to be added.
+**Transcribe, summarize, and extract actionables from any video or podcast.**
 
 ---
 
 ## What It Does
 
-VidText takes a YouTube video, Instagram Reel, or Spotify podcast URL and produces a full transcript, an objective-focused summary, and a list of actionable items. It runs as a CLI tool, a FastAPI server, or through a Chrome extension -- with optional Kindle delivery for long-form content. All processing uses free-tier APIs and local models.
+VidText takes a YouTube video, Instagram Reel, or Spotify podcast URL and produces a full transcript, an objective-focused summary, and a list of actionable items. It runs as a CLI tool, a FastAPI server, or through a Chrome extension -- with optional Kindle delivery for long-form content.
+
+**Cost model:** Transcription is zero-cost (local Whisper). Summarization uses the Anthropic Claude API (requires a paid API key), or you can use the built-in local extractive summarizer (`local_summarizer.py`) for a completely free pipeline.
 
 ---
 
@@ -28,7 +24,8 @@ VidText takes a YouTube video, Instagram Reel, or Spotify podcast URL and produc
 - **FastAPI Server** -- REST API backend for the Chrome extension and programmatic access
 - **Agent Architecture** -- Modular skill-based design (transcriber, summarizer, actionable extractor, kindle sender)
 - **Job Tracking** -- Persistent database for transcript/summary/actionable storage with job progress tracking
-- **Zero Cost** -- No paid APIs required; uses local Whisper for STT and free LLM tiers for summarization
+- **Local Summarizer** -- Free extractive summarizer (`local_summarizer.py`) as an alternative to the Claude API
+- **Transcript Formatter** -- Cleans and structures raw Whisper output into readable paragraphs (`transcript_formatter.py`)
 
 ---
 
@@ -39,7 +36,7 @@ VidText takes a YouTube video, Instagram Reel, or Spotify podcast URL and produc
 | Language | Python 3.11+ |
 | Web Framework | FastAPI + Uvicorn |
 | Transcription | OpenAI Whisper (local, free) |
-| Summarization | Anthropic Claude (free tier) |
+| Summarization | Anthropic Claude API or local extractive mode |
 | Video Download | yt-dlp |
 | Image Processing | Pillow |
 | Validation | Pydantic v2 |
