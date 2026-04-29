@@ -2,6 +2,8 @@
 
 **Transcribe, summarize, and extract actionables from any video or podcast.**
 
+![VidText Content Listener](docs/content-listener-card.png)
+
 ---
 
 ## What It Does
