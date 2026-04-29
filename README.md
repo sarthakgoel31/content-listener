@@ -1,33 +1,47 @@
-# VidText (Content Listener)
+# VidText
 
-**Transcribe, summarize, and extract actionables from any video or podcast.**
+**Transcribe, summarize, and extract actionables from any video or podcast -- for free.**
 
-![VidText Content Listener](docs/content-listener-card.png)
-
----
-
-## What It Does
-
-VidText takes a YouTube video, Instagram Reel, or Spotify podcast URL and produces a full transcript, an objective-focused summary, and a list of actionable items. It runs as a CLI tool, a FastAPI server, or through a Chrome extension -- with optional Kindle delivery for long-form content.
-
-**Cost model:** Transcription is zero-cost (local Whisper). Summarization uses the Anthropic Claude API (requires a paid API key), or you can use the built-in local extractive summarizer (`local_summarizer.py`) for a completely free pipeline.
+Paste a URL. Get a transcript, summary, and action items. Send it to your Kindle.
 
 ---
 
-## Key Features
+## Why
 
-- **Multi-Platform Support** -- YouTube videos, Instagram Reels, and Spotify podcasts
-- **Smart Transcription** -- Automatic Whisper model selection based on audio length and quality (free, local)
-- **Objective-Focused Summaries** -- Summarizes content relative to your specific objective or question
-- **Actionable Extraction** -- Pulls out concrete next steps and takeaways from any content
-- **Chrome Extension** -- Browser extension with overlay UI for one-click transcription while browsing
-- **Kindle Sender** -- Send formatted transcripts and summaries directly to your Kindle device
-- **Channel Mode** -- Process multiple videos from a channel in batch (`--channel URL --count N`)
-- **FastAPI Server** -- REST API backend for the Chrome extension and programmatic access
-- **Agent Architecture** -- Modular skill-based design (transcriber, summarizer, actionable extractor, kindle sender)
-- **Job Tracking** -- Persistent database for transcript/summary/actionable storage with job progress tracking
-- **Local Summarizer** -- Free extractive summarizer (`local_summarizer.py`) as an alternative to the Claude API
-- **Transcript Formatter** -- Cleans and structures raw Whisper output into readable paragraphs (`transcript_formatter.py`)
+You watch a 45-minute YouTube video and forget everything by the next day. You listen to a podcast while driving and can't take notes. You want to batch-process a channel's content but there's no free tool that does it.
+
+VidText solves this: give it any YouTube video, Instagram Reel, or Spotify podcast URL, and it returns a full transcript, an objective-focused summary, and concrete actionable items. Runs as a CLI, API server, or Chrome extension. Transcription is zero-cost (local Whisper). Summarization uses Claude API or a built-in local extractive summarizer for a completely free pipeline.
+
+---
+
+## Features
+
+| Feature | Description |
+|---------|-------------|
+| Multi-Platform | YouTube videos, Instagram Reels, Spotify podcasts |
+| Smart Transcription | Auto-selects Whisper model based on audio length and quality |
+| Objective-Focused Summary | Summarizes relative to your specific question or goal |
+| Actionable Extraction | Pulls concrete next steps and takeaways |
+| Chrome Extension | One-click transcription while browsing (Manifest V3) |
+| Kindle Sender | Send formatted transcripts directly to your Kindle |
+| Channel Mode | Batch-process N videos from a channel (`--channel URL --count N`) |
+| FastAPI Server | REST API backend for browser extension and programmatic access |
+| Local Summarizer | Free extractive summarizer as alternative to Claude API |
+| Transcript Formatter | Cleans raw Whisper output into readable paragraphs |
+| Job Tracking | SQLite persistence for all transcripts, summaries, and job progress |
+
+---
+
+## How It Works
+
+```
+URL --> yt-dlp (download audio)
+    --> Whisper (local STT, model auto-selected)
+    --> SQLite (store transcript)
+    --> LLM Summarizer (Claude API or local extractive mode)
+    --> LLM Actionable Extractor
+    --> Output: CLI / REST API / Chrome Extension / Kindle
+```
 
 ---
 
@@ -40,64 +54,96 @@ VidText takes a YouTube video, Instagram Reel, or Spotify podcast URL and produc
 | Transcription | OpenAI Whisper (local, free) |
 | Summarization | Anthropic Claude API or local extractive mode |
 | Video Download | yt-dlp |
-| Image Processing | Pillow |
 | Validation | Pydantic v2 |
 | Chrome Extension | Vanilla JS + Manifest V3 |
-| Database | SQLite (via backend) |
+| Database | SQLite |
+
+---
+
+## Architecture
+
+```
+agent/
+└── content_agent.py           -- Orchestrator (calls skills in sequence)
+
+skill/
+├── transcriber.py             -- yt-dlp + Whisper pipeline
+├── summarizer.py              -- LLM-powered summarization
+├── local_summarizer.py        -- Free extractive summarizer (no API)
+├── transcript_formatter.py    -- Raw Whisper → readable paragraphs
+├── actionable_extractor.py    -- Concrete takeaway extraction
+└── kindle_sender.py           -- Format + email to Kindle
+
+project/
+├── backend/
+│   └── server.py              -- FastAPI server (port 8420)
+└── chrome-extension/          -- Manifest V3 browser extension
+
+output/
+└── content_listener.db        -- SQLite job + transcript storage
+```
 
 ---
 
 ## Getting Started
 
-### Prerequisites
-
-- Python 3.11+
-- ffmpeg installed (`brew install ffmpeg` on macOS)
-
-### Installation
-
 ```bash
 git clone https://github.com/sarthakgoel31/content-listener.git
 cd content-listener
-python -m venv .venv
-source .venv/bin/activate
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### CLI Usage
+**Prerequisites:** Python 3.11+, ffmpeg (`brew install ffmpeg`)
+
+### CLI
 
 ```bash
-# Transcribe and summarize a single video
-python -m agent.content_agent --urls "https://youtube.com/watch?v=..." --objective "Learn about X" --question "What are the key takeaways?"
+# Single video
+python -m agent.content_agent \
+  --urls "https://youtube.com/watch?v=..." \
+  --objective "Learn about X" \
+  --question "What are the key takeaways?"
 
-# Process multiple videos from a channel
-python -m agent.content_agent --channel "https://youtube.com/@channel" --count 10 --objective "..."
+# Batch channel processing
+python -m agent.content_agent \
+  --channel "https://youtube.com/@channel" \
+  --count 10 \
+  --objective "..."
 ```
 
 ### Server
 
 ```bash
 python -m project.backend.server
+# Runs at http://localhost:8420
 ```
-
-Server runs at [http://localhost:8420](http://localhost:8420).
 
 ### Chrome Extension
 
-1. Open `chrome://extensions/` in Chrome
+1. Open `chrome://extensions/`
 2. Enable Developer Mode
-3. Click "Load unpacked" and select `project/chrome-extension/`
+3. Load unpacked → select `project/chrome-extension/`
 
 ---
 
-## Architecture
+## Status
 
-The system uses an agent-skill architecture: the `content_agent` orchestrates the pipeline by calling independent skills (transcriber, summarizer, actionable extractor, kindle sender) in sequence. Each skill is a standalone module with no cross-dependencies. The FastAPI server wraps the same agent for browser-based access, while the Chrome extension communicates with the server via REST. Job state and results are persisted in SQLite for retrieval.
-
-```
-URL --> Transcriber (yt-dlp + Whisper) --> Summarizer (LLM)
-    --> Actionable Extractor (LLM) --> Output (CLI / API / Kindle)
-```
+| Component | Status |
+|-----------|--------|
+| YouTube transcription | Done |
+| Instagram Reel support | Done |
+| Spotify podcast support | Done |
+| Whisper model auto-selection | Done |
+| Objective-focused summarization | Done |
+| Local extractive summarizer | Done |
+| Actionable extraction | Done |
+| Transcript formatter | Done |
+| Chrome extension | Done |
+| Kindle sender | Done |
+| Channel batch mode | Done |
+| FastAPI server | Done |
+| SQLite persistence | Done |
 
 ---
 
